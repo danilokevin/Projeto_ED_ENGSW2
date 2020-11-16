@@ -1,0 +1,4 @@
+categoria(C-candidato ou F-funcionario),nome,CPF,senha
+C,DANILO,123123,SOPHIA
+F,MERCEDES,321321,DANILO
+C,ALAN,999111,FATEC
