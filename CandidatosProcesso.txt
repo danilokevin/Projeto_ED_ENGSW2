@@ -1,0 +1,3 @@
+nome, CPF, email, numInscricao, fase1, fase2, fase3
+ALAN,999111,alan@uol.com.br,8584,APROVADO,null,null
+DANILO,123123,danilo@gmail.com,3100,APROVADO,null,null
