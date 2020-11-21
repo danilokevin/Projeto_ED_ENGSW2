@@ -15,6 +15,7 @@ public class MenuPrincipal {
 	static ListaUser lUser = new ListaUser();
 	static ListaCand lCand = new ListaCand();
 	static int faseProcesso = 1; //essa variável vai ajudar na hora de validar a inscrição e pedido de recursos
+	static int numRelatorio = 1;
 
 	public static void main(String[] args) {
 		
@@ -32,7 +33,7 @@ public class MenuPrincipal {
 		}
 		
 		while (option != 9){
-			option = Integer.parseInt(JOptionPane.showInputDialog("MENU PRINCIPAL \n 1. Login \n 2.Cadastre-se \n "
+			option = Integer.parseInt(JOptionPane.showInputDialog("MENU PRINCIPAL \n 1. Login \n 2.Cadastro \n "
 					+ "9.FINALIZAR"));
 			
 			switch(option){
@@ -50,7 +51,7 @@ public class MenuPrincipal {
 								if (userAtual.getCategoria().equals("C")){ //"C" de candidato
 									while (option != 9){
 										option = Integer.parseInt(JOptionPane.showInputDialog("PORTAL CANDIDATO \n 1. Realizar "
-												+ "inscrição no Processo \n 2. Consultar Situação \n 9.SAIR"));
+												+ "inscrição no Processo \n 2. Consultar Situação \n 3. Cancelar inscrição \n 9.SAIR"));
 										
 										Candidato candAtual = lCand.buscaCand(userAtual.getCPF()); //verifica se candidato já não está inscrito
 										
@@ -80,7 +81,15 @@ public class MenuPrincipal {
 												JOptionPane.showMessageDialog(null, "Candidato não inscrito no processo");
 											}
 											break;
+										
+										case 3:
+											int conf = Integer.parseInt(JOptionPane.showInputDialog("Tem certeza? \n 1. SIM \n 2. CANCELAR"));
 											
+											if (conf == 1){
+												lCand.removerCand(userAtual.getCPF());
+											}
+											
+											break;
 										}
 									}
 								} else {
@@ -92,34 +101,67 @@ public class MenuPrincipal {
 										switch (option){
 										case 1:
 											Candidato candAval = buscarCandidato(); //busca candidato pelo número do cpf
-											String avaliacao;
-											int resultado = Integer.parseInt(JOptionPane.showInputDialog("RESULTADO \n 1.Aprovado \n 2.Reprovado"));
+//											String avaliacao;
+//											int resultado = Integer.parseInt(JOptionPane.showInputDialog("RESULTADO \n 1.Aprovado \n 2.Reprovado"));
 											
 											//informa se reprovado ou aprovado
-											if (resultado == 1){
-												avaliacao = "APROVADO";
-											} else {
-												avaliacao = "REPROVADO";
-											}
+//											if (resultado == 1){
+//												avaliacao = "APROVADO";
+//											} else {
+//												avaliacao = "REPROVADO";
+//											}
 											
-											JOptionPane.showMessageDialog(null, "Registro realizado com sucesso!");
+//											JOptionPane.showMessageDialog(null, "Registro realizado com sucesso!");
 											
 											//atribuição de acordo com a fase em que o processo se encontra
 											switch(faseProcesso){
 											case 1:
-												candAval.setFase1(avaliacao);
+												if (lCand.confirmarDoc(candAval.getCPF())){
+													candAval.setFase1("APROVADO");
+												} else {
+													candAval.setFase1("REPROVADO");
+													JOptionPane.showMessageDialog(null, "Entrega de documentos não confirmada!");
+												}
+												
 												break;
 											case 2:
-												candAval.setFase2(avaliacao);
+												//candAval.setFase2(avaliacao);
 												break;
 											case 3:
-												candAval.setFase3(avaliacao);
+												//candAval.setFase3(avaliacao);
 												break;
 											}
 											
 											//atualizada arquivo txt
 											lCand.atualizarDados();
+										
+										case 2:
 											
+											Candidato[] candidatos = lCand.ordenarLista();
+											candidatos = lCand.quickSort(candidatos, 0, candidatos.length - 1);
+											
+											try {
+												for (int i = 0; i < candidatos.length; i++){
+													String conteudo = "\r\n" + candidatos[i].getNome() + "," + candidatos[i].getCPF() + "," + candidatos[i].getEmail() + "," + candidatos[i].getNumInscricao();
+													lCand.createFile(conteudo, numRelatorio);
+												}
+												
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+											
+											String path = "C:\\Users\\DaniloKevin\\Desktop";
+											String name = "OrdemAlfabetica[" + numRelatorio + "].txt";
+											
+											try {
+												lCand.openFile(path, name);
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+											
+											numRelatorio++;
+											break;
 										}
 									}			
 								}
@@ -138,14 +180,27 @@ public class MenuPrincipal {
 				}
 			case 2:
 				while (option != 99){
-					option = Integer.parseInt(JOptionPane.showInputDialog("TELA DE CADASTRO \n 1. Identificar-se \n 99.SAIR"));
+					option = Integer.parseInt(JOptionPane.showInputDialog("TELA DE CADASTRO \n 1. Identificar-se \n 2. Recuperar a senha \n 99.SAIR"));
 					
 					switch (option){
 					case 1:
 						novoUser = cadastroPlataforma();
-						lUser.AdicionaFinal(novoUser);
-						JOptionPane.showMessageDialog(null, "Cadastro realizado com sucesso! Acesso liberado à plataforma!");
+						
+						if (novoUser == null){
+							JOptionPane.showMessageDialog(null, "Realize o login ou Recupere sua senha!");
+						} else {
+							lUser.AdicionaFinal(novoUser);
+							JOptionPane.showMessageDialog(null, "Cadastro realizado com sucesso! Acesso liberado à plataforma!");
+						}
+						
+						break;					
+					case 2:
+						String CPF = JOptionPane.showInputDialog("Informe seu CPF");
+						lUser.recuperaSenha(CPF);
+						
+						
 						option = 99;
+						break;
 					}
 					
 				}
@@ -184,39 +239,50 @@ public class MenuPrincipal {
 		String nome;
 		String senha = "0";
 		String auxSenha = "1";
-		Usuario user;
-		
-		while (!(auxCategoria == 1 || auxCategoria == 2)){
-			auxCategoria = Integer.parseInt(JOptionPane.showInputDialog("Selecione o perfil: \n 1. Candidato \n 2. Funcionário"));
-			
-			if (!(auxCategoria == 1 || auxCategoria == 2)){
-				JOptionPane.showMessageDialog(null, "Selecione uma opção válida!");
-			}
-		}
-		
-		if (auxCategoria == 1){
-			categoria = "C";
-		} else {
-			categoria = "F";
-		}
+		Usuario user = null;
 		
 		while (CPF == ""){
 			CPF = JOptionPane.showInputDialog("CPF");
 		}
 		
-		
-		nome = JOptionPane.showInputDialog("NOME");
-		
-		while (!(senha.equals(auxSenha))){
-			senha = JOptionPane.showInputDialog("SENHA");
-			auxSenha = JOptionPane.showInputDialog("CONFIRME A SENHA");
+		if (lUser.buscaUser(CPF)){
+			JOptionPane.showMessageDialog(null, "CPF já cadastrado!");
+		} else {
 			
-			if (!(senha.equals(auxSenha))){
-				JOptionPane.showMessageDialog(null, "Senhas não conferem! Tente novamente");
+			while (!(auxCategoria == 1 || auxCategoria == 2)){
+				auxCategoria = Integer.parseInt(JOptionPane.showInputDialog("Selecione o perfil: \n 1. Candidato \n 2. Funcionário"));
+				
+				if (!(auxCategoria == 1 || auxCategoria == 2)){
+					JOptionPane.showMessageDialog(null, "Selecione uma opção válida!");
+				}
 			}
+			
+			if (auxCategoria == 1){
+				categoria = "C";
+			} else {
+				categoria = "F";
+			}
+			
+			
+			nome = JOptionPane.showInputDialog("NOME");
+			
+			while (!(senha.equals(auxSenha))){
+				senha = JOptionPane.showInputDialog("SENHA");
+				auxSenha = JOptionPane.showInputDialog("CONFIRME A SENHA");
+				
+				if (!(senha.equals(auxSenha))){
+					JOptionPane.showMessageDialog(null, "Senhas não conferem! Tente novamente");
+				}
+			}
+			
+			user = new Usuario(categoria, nome, CPF, senha);
+			
 		}
 		
-		return user = new Usuario(categoria, nome, CPF, senha);
+		
+		
+		
+		return user;
 		
 	}
 

@@ -163,6 +163,50 @@ public class ListaUser {
 		
 		
 	}
+	
+	
+	
+	public boolean buscaUser(String CPF){
+		//realizar busca sequencial de um usuário através do número do CPF
+		NO aux = inicio;
+		
+		return busca(aux, CPF);	
+	}
+
+	private boolean busca(NO aux, String CPF) {
+		boolean cond = false;
+		
+		while (aux != null && cond == false){
+			if (((Usuario) aux.getDado()).getCPF().equals(CPF)){
+				cond = true;
+			} else {
+				aux = aux.getProx();
+			}
+		} 
+		
+		return cond;
+	}
+	
+	public String recuperaSenha(String CPF){
+		NO aux = inicio;
+		String senha = "";
+		
+		while (aux != null){
+			if (((Usuario) aux.getDado()).getCPF().equals(CPF)){
+				senha = ((Usuario) aux.getDado()).getSenha();
+				
+				JOptionPane.showMessageDialog(null, "Sua senha é: " + senha);
+				aux = null;
+				
+			} else {
+				aux = aux.getProx();
+			}
+		}
+		
+		return senha;
+		
+		
+	}
 
 
 
