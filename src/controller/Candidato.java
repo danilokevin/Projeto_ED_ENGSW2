@@ -8,11 +8,18 @@ public class Candidato {
 	private String CPF;
 	private String email;
 	private String numInscricao;
-	private boolean ativo;
 	private String fase1;
 	private String fase2;
-	private String fase3;
+	private String pontuacao;
 	
+	public String getPontuacao() {
+		return pontuacao;
+	}
+
+	public void setPontuacao(String pontuacao) {
+		this.pontuacao = pontuacao;
+	}
+
 	public Candidato(){
 		
 	}
@@ -22,27 +29,21 @@ public class Candidato {
 		this.CPF = CPF;
 		this.email = email;
 		this.numInscricao = numInscricao;
-		this.ativo = true;
+		this.pontuacao = "";
 	}
 	
-	public Candidato(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String fase3){
+	public Candidato(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String pontuacao){
 		this.nome = nome;
 		this.CPF = CPF;
 		this.email = email;
 		this.numInscricao = numInscricao;
 		this.fase1 = fase1;
 		this.fase2 = fase2;
-		this.fase3 = fase3;
-		this.ativo = true;
+		this.pontuacao = pontuacao;
 	}
 
 
-	public boolean isAtivo() {
-		return ativo;
-	}
-	public void setAtivo(boolean ativo) {
-		this.ativo = ativo;
-	}
+	
 	public String getNome() {
 		return nome;
 	}
@@ -79,12 +80,7 @@ public class Candidato {
 	public void setFase2(String fase2) {
 		this.fase2 = fase2;
 	}
-	public String getFase3() {
-		return fase3;
-	}
-	public void setFase3(String fase3) {
-		this.fase3 = fase3;
-	}
+	
 
 
 	

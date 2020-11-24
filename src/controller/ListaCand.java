@@ -36,7 +36,7 @@ private NO inicio;
 		
 		//salvar no txt
 		try {
-			createFile(e.getNome(), e.getCPF(), e.getEmail(), e.getNumInscricao(), e.getFase1(), e.getFase2(), e.getFase3());
+			salvarInscricao(e.getNome(), e.getCPF(), e.getEmail(), e.getNumInscricao(), e.getFase1(), e.getFase2(), e.getPontuacao());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -55,8 +55,8 @@ private NO inicio;
 			
 			
 			try {
-				createFile(candAtualizar.getNome(), candAtualizar.getCPF(), candAtualizar.getEmail(), candAtualizar.getNumInscricao(), 
-						candAtualizar.getFase1(), candAtualizar.getFase2(), candAtualizar.getFase3(), existe, aux2);
+				atualizarArquivo(candAtualizar.getNome(), candAtualizar.getCPF(), candAtualizar.getEmail(), candAtualizar.getNumInscricao(), 
+						candAtualizar.getFase1(), candAtualizar.getFase2(), candAtualizar.getPontuacao(), existe, aux2);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -67,16 +67,16 @@ private NO inicio;
 		}
 	}
 	
-	private void createFile(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String fase3, boolean existe, int aux) throws IOException {
+	private void atualizarArquivo(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String pontuacao, boolean existe, int aux) throws IOException {
 		//esse método é utilizado para atualizar o arquivo
 		String cabecario = "";
 		String conteudo = "";
 		
 		if (aux == 1){
-			cabecario = "nome, CPF, email, numInscricao, fase1, fase2, fase3";
-			conteudo += cabecario + "\r\n"  + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + fase3;
+			cabecario = "nome, CPF, email, numInscricao, fase1, fase2, pontuacaoFinal";
+			conteudo += cabecario + "\r\n"  + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + pontuacao;
 		} else {
-			conteudo = "\r\n" + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + fase3;
+			conteudo = "\r\n" + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + pontuacao;
 		}
 		
 		//arquivo txt salvo na area de trabalho
@@ -101,9 +101,9 @@ private NO inicio;
 		
 	}
 	
-	private void createFile(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String fase3) throws IOException {
+	private void salvarInscricao(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String pontuacao) throws IOException {
 		//esse é utilizado para salvar o novo candidato assim que ele relizada a inscrição
-		String conteudo = "\r\n" + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + fase3;
+		String conteudo = "\r\n" + nome + "," + CPF + "," + email + "," + numInscricao + "," + fase1 + "," + fase2 + "," + pontuacao;
 		
 		String path = "C:\\Users\\DaniloKevin\\Desktop";
 		String name = "CandidatosProcesso";
@@ -280,12 +280,12 @@ private NO inicio;
 	}
 	
 	
-	public Candidato[] quickSort(Candidato[] vetor, int ini, int fim){
+	public Candidato[] quickSortAlfa(Candidato[] vetor, int ini, int fim){
 		int divisao;
 		if (ini < fim + 1){
-			divisao = particao(vetor, ini, fim);
-			quickSort(vetor, ini, divisao-1);
-			quickSort(vetor, divisao+1, fim);
+			divisao = particaoAlfa(vetor, ini, fim);
+			quickSortAlfa(vetor, ini, divisao-1);
+			quickSortAlfa(vetor, divisao+1, fim);
 		}
 		
 		return vetor;
@@ -300,14 +300,42 @@ private NO inicio;
 	private int getPivot(int low, int high){
 		return (low+high)/2;
 	}
+	
+	public Candidato[] quickSortNum(Candidato[] vetor, int ini, int fim){
+		int divisao;
+		if (ini < fim + 1){
+			divisao = particaoNum(vetor, ini, fim);
+			quickSortNum(vetor, ini, divisao-1);
+			quickSortNum(vetor, divisao+1, fim);
+		}
+		
+		return vetor;
+	}
 
-	private int particao(Candidato[] vetor, int ini, int fim) {
+	private int particaoAlfa(Candidato[] vetor, int ini, int fim) {
 		troca(vetor, ini, getPivot(ini, fim));
 		
 		int border = ini + 1;
 		
 		for (int i = border; i <= fim; i++){
-			if (vetor[i].getNome().compareTo(vetor[ini].getNome()) < 0){
+			if (vetor[i].getNome().compareToIgnoreCase(vetor[ini].getNome()) < 0){
+				troca(vetor, i, border++);
+			}
+		}
+		
+		troca(vetor, ini, border-1);
+		return border - 1;
+	}
+	
+	
+	private int particaoNum(Candidato[] vetor, int ini, int fim) {
+		troca(vetor, ini, getPivot(ini, fim));
+		
+		int border = ini + 1;
+		
+		for (int i = border; i <= fim; i++){
+			System.out.println(vetor[i].getPontuacao() + " e " + vetor[ini].getPontuacao());
+			if (Integer.parseInt(vetor[i].getPontuacao()) > Integer.parseInt(vetor[ini].getPontuacao())){
 				troca(vetor, i, border++);
 			}
 		}
@@ -318,11 +346,11 @@ private NO inicio;
 	
 	
 	
-	public void createFile(String conteudo, int numRelatorio) throws IOException {
+	public void createFile(String conteudo, String name) throws IOException {
 		//esse é utilizado para criar um novo documento com os candidatos ordenados por nome
 		
 		String path = "C:\\Users\\DaniloKevin\\Desktop";
-		String name = "OrdemAlfabetica[" + numRelatorio + "].txt";
+		//String name = "OrdemAlfabetica[" + numRelatorio + "].txt";
 		
 		
 		
@@ -364,5 +392,7 @@ private NO inicio;
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	
 
 }

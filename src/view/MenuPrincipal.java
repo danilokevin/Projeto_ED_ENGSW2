@@ -14,7 +14,7 @@ public class MenuPrincipal {
 	
 	static ListaUser lUser = new ListaUser();
 	static ListaCand lCand = new ListaCand();
-	static int faseProcesso = 1; //essa variável vai ajudar na hora de validar a inscrição e pedido de recursos
+	static int faseProcesso = 3; //essa variável vai ajudar na hora de validar a inscrição e pedido de recursos
 	static int numRelatorio = 1;
 
 	public static void main(String[] args) {
@@ -44,7 +44,7 @@ public class MenuPrincipal {
 					
 					switch (option){
 					case 1:
-						Usuario userAtual = loginUser(); //informa e valida os dados e retorna um novo usuário
+						Usuario userAtual = loginUser(); //informa e valida os dados e retorna um usuário
 						
 						if (userAtual != null){
 							
@@ -59,10 +59,12 @@ public class MenuPrincipal {
 										case 1:
 											
 											if (candAtual == null){
-												novoCand = inscricaoProcesso(userAtual.getNome(), userAtual.getCPF());//novo candidato aproveitando os dados do usuário logado, só vai pedir e-mail e gerar o protocolo de inscrição
-												lCand.AdicionaFinal(novoCand);
-												JOptionPane.showMessageDialog(null, "Inscrição realizada com sucesso! \n"
-														+ "Número de inscrição: " + novoCand.getNumInscricao());
+												if (faseProcesso == 1){
+													novoCand = inscricaoProcesso(userAtual.getNome(), userAtual.getCPF());//novo candidato aproveitando os dados do usuário logado, só vai pedir e-mail e gerar o protocolo de inscrição
+													lCand.AdicionaFinal(novoCand);
+												} else {
+													JOptionPane.showMessageDialog(null, "Prazo para inscrições encerrado");
+												}
 												
 											} else {
 												JOptionPane.showMessageDialog(null, "Inscrição já foi realizada!");
@@ -73,9 +75,9 @@ public class MenuPrincipal {
 											
 											//mostra o status do candidato em cada fase, se aprovado ou reprovado
 											if (candAtual != null){
-												JOptionPane.showMessageDialog(null, "FASE 1 \t\t --> " + candAtual.getFase1() + 
-																					"\nFASE 2 \t\t --> " + candAtual.getFase2() +
-																					"\nFASE 3 \t\t --> " + candAtual.getFase3());
+												JOptionPane.showMessageDialog(null, "FASE 1 - INSCRIÇÃO        \t\t --> " + candAtual.getFase1() + 
+																					"\nFASE 2 - ENTREVISTA      \t\t --> " + candAtual.getFase2() +
+																					"\nFASE 3 - PONTUAÇÃO FINAL \t\t --> " + candAtual.getPontuacao());
 											}else {
 												//isso se ele estiver inscrito no processo
 												JOptionPane.showMessageDialog(null, "Candidato não inscrito no processo");
@@ -83,67 +85,84 @@ public class MenuPrincipal {
 											break;
 										
 										case 3:
-											int conf = Integer.parseInt(JOptionPane.showInputDialog("Tem certeza? \n 1. SIM \n 2. CANCELAR"));
-											
-											if (conf == 1){
-												lCand.removerCand(userAtual.getCPF());
+											if (candAtual != null){
+												int conf = Integer.parseInt(JOptionPane.showInputDialog("Tem certeza? \n 1. SIM \n 2. CANCELAR"));
+												
+												if (conf == 1){
+													lCand.removerCand(userAtual.getCPF());
+												}
+											} else {
+												JOptionPane.showMessageDialog(null, "Candidato não inscrito no processo");
 											}
-											
 											break;
 										}
 									}
 								} else {
 									while (option != 9){
 										//"F" de Funcionário
-										option = Integer.parseInt(JOptionPane.showInputDialog("PORTAL FUNCIONÁRIO \n 1. Aprovar "
-												+ "Candidato \n 2. Emitir lista de candidatos \n 9.SAIR"));
+										option = Integer.parseInt(JOptionPane.showInputDialog("PORTAL FUNCIONÁRIO \n 1. Avaliação "
+												+ "Candidato \n 2. Emitir lista de candidatos \n 3. Lista Final \n 9.SAIR"));
 										
 										switch (option){
 										case 1:
-											Candidato candAval = buscarCandidato(); //busca candidato pelo número do cpf
-//											String avaliacao;
-//											int resultado = Integer.parseInt(JOptionPane.showInputDialog("RESULTADO \n 1.Aprovado \n 2.Reprovado"));
 											
-											//informa se reprovado ou aprovado
-//											if (resultado == 1){
-//												avaliacao = "APROVADO";
-//											} else {
-//												avaliacao = "REPROVADO";
-//											}
+											Candidato candAval = buscarCandidato(); //busca candidato pelo número do cpf
+											
+											if (candAval != null){
+												switch(faseProcesso){
+												case 1:
+													if (lCand.confirmarDoc(candAval.getCPF())){
+														candAval.setFase1("APROVADO");
+													} else {
+														candAval.setFase1("REPROVADO");
+														JOptionPane.showMessageDialog(null, "Entrega de documentos não confirmada!");
+													}
+													
+													break;
+												case 2:
+													
+													String avaliacao;
+													int resultado = Integer.parseInt(JOptionPane.showInputDialog("RESULTADO \n 1.Aprovado \n 2.Reprovado"));
+													
+													//informa se reprovado ou aprovado
+													if (resultado == 1){
+														avaliacao = "APROVADO";
+													} else {
+														avaliacao = "REPROVADO";
+													}
+													candAval.setFase2(avaliacao);
+													
+													JOptionPane.showMessageDialog(null, "Registro realizado com sucesso!");
+													break;
+												case 3:
+													candAval.setPontuacao(pontuarCand());
+													JOptionPane.showMessageDialog(null, "Registro realizado com sucesso!");
+													break;
+												}
+												
+												//atualizada arquivo txt
+												lCand.atualizarDados();
+											
+											
+											} else {
+												JOptionPane.showMessageDialog(null, "CPF inválido! Nenhum candidato encontrado! \n Verifique!");
+											}
 											
 //											JOptionPane.showMessageDialog(null, "Registro realizado com sucesso!");
 											
 											//atribuição de acordo com a fase em que o processo se encontra
-											switch(faseProcesso){
-											case 1:
-												if (lCand.confirmarDoc(candAval.getCPF())){
-													candAval.setFase1("APROVADO");
-												} else {
-													candAval.setFase1("REPROVADO");
-													JOptionPane.showMessageDialog(null, "Entrega de documentos não confirmada!");
-												}
-												
-												break;
-											case 2:
-												//candAval.setFase2(avaliacao);
-												break;
-											case 3:
-												//candAval.setFase3(avaliacao);
-												break;
-											}
-											
-											//atualizada arquivo txt
-											lCand.atualizarDados();
-										
+											break;
 										case 2:
 											
 											Candidato[] candidatos = lCand.ordenarLista();
-											candidatos = lCand.quickSort(candidatos, 0, candidatos.length - 1);
+											candidatos = lCand.quickSortAlfa(candidatos, 0, candidatos.length - 1);
+											
+											String name = "OrdemAlfabetica[" + numRelatorio + "].txt";
 											
 											try {
 												for (int i = 0; i < candidatos.length; i++){
 													String conteudo = "\r\n" + candidatos[i].getNome() + "," + candidatos[i].getCPF() + "," + candidatos[i].getEmail() + "," + candidatos[i].getNumInscricao();
-													lCand.createFile(conteudo, numRelatorio);
+													lCand.createFile(conteudo, name);
 												}
 												
 											} catch (IOException e) {
@@ -151,7 +170,38 @@ public class MenuPrincipal {
 											}
 											
 											String path = "C:\\Users\\DaniloKevin\\Desktop";
-											String name = "OrdemAlfabetica[" + numRelatorio + "].txt";
+											
+											
+											try {
+												lCand.openFile(path, name);
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+											
+											numRelatorio++;
+											break;
+											
+										case 3:
+											Candidato[] resultadoFinal = lCand.ordenarLista();
+											
+											
+											resultadoFinal = lCand.quickSortNum(resultadoFinal, 0, resultadoFinal.length - 1);
+											
+											name = "OrdemPontuacao[" + numRelatorio + "].txt";
+											
+											try {
+												for (int i = 0; i < resultadoFinal.length; i++){
+													String conteudo = "\r\n" + resultadoFinal[i].getNome() + "," + resultadoFinal[i].getCPF() + "," + resultadoFinal[i].getEmail() + "," + resultadoFinal[i].getNumInscricao() + "," + resultadoFinal[i].getPontuacao();
+													lCand.createFile(conteudo, name);
+												}
+												
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+											
+											path = "C:\\Users\\DaniloKevin\\Desktop";
+											
 											
 											try {
 												lCand.openFile(path, name);
@@ -208,6 +258,12 @@ public class MenuPrincipal {
 			}
 		}
 
+	}
+
+	private static String pontuarCand() {
+		
+		int tempo = (int) ((Math.random() * 100) + 80);
+		return Integer.toString(tempo);
 	}
 
 	private static Candidato buscarCandidato() {
@@ -278,9 +334,6 @@ public class MenuPrincipal {
 			user = new Usuario(categoria, nome, CPF, senha);
 			
 		}
-		
-		
-		
 		
 		return user;
 		
