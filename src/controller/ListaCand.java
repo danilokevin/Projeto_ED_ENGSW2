@@ -334,7 +334,6 @@ private NO inicio;
 		int border = ini + 1;
 		
 		for (int i = border; i <= fim; i++){
-			System.out.println(vetor[i].getPontuacao() + " e " + vetor[ini].getPontuacao());
 			if (Integer.parseInt(vetor[i].getPontuacao()) > Integer.parseInt(vetor[ini].getPontuacao())){
 				troca(vetor, i, border++);
 			}

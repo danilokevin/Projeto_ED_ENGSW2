@@ -29,7 +29,7 @@ public class Candidato {
 		this.CPF = CPF;
 		this.email = email;
 		this.numInscricao = numInscricao;
-		this.pontuacao = "";
+		this.pontuacao = "0";
 	}
 	
 	public Candidato(String nome, String CPF, String email, String numInscricao, String fase1, String fase2, String pontuacao){
